@@ -19,8 +19,6 @@ const App = () => {
         setNotes(response)
       })
   }, [])
-  console.log('render', notes.length, 'notes')
-
 
   const addNote = (event) => {
     event.preventDefault()
@@ -48,7 +46,6 @@ const App = () => {
 
   const toggleImportanceOf = (id) => {
     console.log("imp of ", id)
-    const url = `http://localhost:3001/notes/${id}`
     const note = notes.find(n => n.id === id)
     const changedNote = {...note, important: !note.important }
 
