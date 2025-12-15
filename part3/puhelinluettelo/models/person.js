@@ -6,40 +6,40 @@ const url = process.env.MONGODB_URI
 
 console.log('connecting to ', url)
 mongoose.connect(url)
-    .then(result => {
-        console.log('connected to MongoDB')
-    })
-    .catch((error) => {
-        console.log('error connecting to MongoDB:', error.message )
-    })
+  .then(() => {
+    console.log('connected to MongoDB')
+  })
+  .catch((error) => {
+    console.log('error connecting to MongoDB:', error.message )
+  })
 
 const nummberValidator = (number) => {
-    if (number.length >= 8) {
-        return /^\d{3}-{1}\d+$/.test(number) || /^\d{2}-{1}\d+$/.test(number) 
-    }
-    return false
+  if (number.length >= 8) {
+    return /^\d{3}-{1}\d+$/.test(number) || /^\d{2}-{1}\d+$/.test(number)
+  }
+  return false
 }
 
 const personSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        minlength: 3,
-        required: true,
-        unique: true
-    },
-    number: {
-        type: String,
-        required: true,
-        validate: nummberValidator,
-    },
+  name: {
+    type: String,
+    minlength: 3,
+    required: true,
+    unique: true
+  },
+  number: {
+    type: String,
+    required: true,
+    validate: nummberValidator,
+  },
 })
 
 personSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
 })
 
 module.exports = mongoose.model('Person', personSchema)
