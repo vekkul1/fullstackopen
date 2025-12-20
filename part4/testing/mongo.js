@@ -7,7 +7,7 @@ if (process.argv.length < 3) {
 
 const password = process.argv[2]
 
-const url = `mongodb+srv://veetieh_db_user:${password}@fullstackopen.csomwjk.mongodb.net/noteApp?retryWrites=true&w=majority&appName=fullstackopen`
+const url = 'mongodb://localhost/noteAppTest'
 
 mongoose.set('strictQuery', false)
 mongoose.connect(url)
@@ -25,6 +25,15 @@ const note = new Note({
 })
 
 note.save().then(result => {
+  console.log('note saved!')
+})
+
+const note2 = new Note({
+  content: 'js isnt easy',
+  important: true,
+})
+
+note2.save().then(result => {
   console.log('note saved!')
   mongoose.connection.close()
 })
