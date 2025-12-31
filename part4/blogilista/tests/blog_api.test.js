@@ -1,11 +1,10 @@
-const { test, after , beforeEach, before, describe } = require('node:test')
+const { test, after , beforeEach, describe } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
 const helper = require('./test_helper')
-const { networkInterfaces } = require('node:os')
 
 const api = supertest(app)
 
@@ -139,6 +138,61 @@ describe('/api/blogs POST', () => {
       .send(newBlog)
       .expect(400)
   })
+})
+
+describe('/api/blogs DELETE', () => {
+  test('deleting deletes actual id', async() => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+    
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.listWithMultipleBlogs.length - 1)
+
+    const findBlog = await Blog.find(blogToDelete)
+    assert.strictEqual(findBlog.length, 0)
+  })
+
+  test('deleting with a fake id', async() => {
+    const blogsAtStart = helper.blogsInDb()
+    const fakeId = "eeee2b3a1b54a676234deeee"
+
+    await api
+      .delete(`/api/blogs/${fakeId}`)
+      .expect(404)
+
+    const blogsAtEnd = helper.blogsInDb()
+    assert.strictEqual(blogsAtStart.length, blogsAtEnd.length)
+  })
+})
+
+describe('/api/blogs PUT', () => {
+  test('editing a blog is saved', async() => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToEdit = blogsAtStart[0]
+
+    const editedBlog = {
+      likes: 10101010
+    }
+
+    const result = await api
+      .put(`/api/blogs/${blogToEdit.id}`)
+      .send(editedBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    assert.strictEqual(result.body.likes, editedBlog.likes)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtStart.length, blogsAtEnd.length)
+
+    const findBlog = await Blog.findById(blogToEdit.id)
+    assert.deepStrictEqual(result.body, findBlog.toJSON())
+  })
+  test('editing without title is not saved')
 })
 
 after(async () => {
