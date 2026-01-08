@@ -150,7 +150,7 @@ describe('/api/blogs DELETE', () => {
       .expect(204)
     
     const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, helper.listWithMultipleBlogs.length - 1)
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart - 1)
 
     const findBlog = await Blog.find(blogToDelete)
     assert.strictEqual(findBlog.length, 0)
