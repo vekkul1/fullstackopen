@@ -28,9 +28,28 @@ const mostBlogs = (blogs) => {
     : { author: biggest[0], blogs: biggest[1],}
 }
 
+const mostLikes = (blogs) => {
+  const authorsBlogs = {}
+  blogs.forEach(blog => {
+    if (!blog.author in authorsBlogs) {
+      authorsBlogs[blog.author] = [blog]
+    } else {
+      authorsBlogs[blog.author] = _.compact(_.concat(blog, authorsBlogs[blog.author]))
+    }
+  })
+  const sum = _.flatMap(authorsBlogs, (value, key) => {
+    return [[key, value.reduce((acc, cur) => acc + cur.likes, 0)]]
+  })
+  const biggest = sum.toSorted((a, b) => b[1] - a[1])[0]
+  return sum.length === 0
+    ? {}
+    : { author: biggest[0], likes: biggest[1] }
+}
+
 module.exports = { 
   dummy,
   totalLikes,
   favoriteBlog,
   mostBlogs,
+  mostLikes,
 } 
