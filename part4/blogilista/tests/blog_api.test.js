@@ -1,16 +1,35 @@
-const { test, after , beforeEach, describe } = require('node:test')
+const { test, after , beforeEach, describe, before } = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const helper = require('./test_helper')
 
 const api = supertest(app)
 
+let token
+let userId
+
+before(async () => {
+  await User.deleteMany({})
+  const user = await api
+    .post('/api/users')
+    .send({ username: 'root', name:'rooter', password: 'password1' })
+    .expect(201)
+  userId = user.body.id
+  const getToken = await api
+    .post('/api/login')
+    .send({ username: 'root', password: 'password1' })
+    .expect(200)
+  token = `Bearer ${getToken.body.token}`
+})
+
 beforeEach(async () => {
   await Blog.deleteMany({})
-  await Blog.insertMany(helper.listWithMultipleBlogs)
+  const list = helper.listWithMultipleBlogs.map(blog => {return {...blog, user: userId}})
+  await Blog.insertMany(list)
 })
 
 describe('/api/blogs GET', () => {
@@ -66,6 +85,7 @@ describe('/api/blogs POST', () => {
     
     await api
       .post('/api/blogs')
+      .set('Authorization', token)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -89,6 +109,7 @@ describe('/api/blogs POST', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', token)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -106,6 +127,7 @@ describe('/api/blogs POST', () => {
 
     const result = await api
       .post('/api/blogs')
+      .set('Authorization', token)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -122,6 +144,7 @@ describe('/api/blogs POST', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', token)
       .send(newBlog)
       .expect(400)
   })
@@ -135,8 +158,27 @@ describe('/api/blogs POST', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', token)
       .send(newBlog)
       .expect(400)
+  })
+
+  test('adding blog without auth doesnt add to the db', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const newBlog = {
+      title: "Type wars",
+      author: "Robert C. Martin",
+      url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+      likes: 2
+    }
+    
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.deepStrictEqual(blogsAtEnd, blogsAtStart)
   })
 })
 
@@ -147,11 +189,11 @@ describe('/api/blogs DELETE', () => {
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', token)
       .expect(204)
     
     const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, blogsAtStart - 1)
-
+    assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
     const findBlog = await Blog.find(blogToDelete)
     assert.strictEqual(findBlog.length, 0)
   })
@@ -162,17 +204,32 @@ describe('/api/blogs DELETE', () => {
 
     await api
       .delete(`/api/blogs/${fakeId}`)
+      .set('Authorization', token)
       .expect(404)
 
     const blogsAtEnd = helper.blogsInDb()
     assert.strictEqual(blogsAtStart.length, blogsAtEnd.length)
+  })
+
+  test('deleting doesnt delete without auth', async() => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(401)
+    
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.deepStrictEqual(blogsAtEnd, blogsAtStart)
+    const findBlog = await Blog.findById(blogToDelete.id)
+    assert.deepStrictEqual(findBlog.toJSON(), blogToDelete)
   })
 })
 
 describe('/api/blogs PUT', () => {
   test('editing a blogs likes', async() => {
     const blogsAtStart = await helper.blogsInDb()
-    const blogToEdit = blogsAtStart[0]
+    const blogToEdit = await blogsAtStart[0]
 
     const editedBlog = {
       likes: 10101010
@@ -184,11 +241,12 @@ describe('/api/blogs PUT', () => {
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
+
     assert.strictEqual(result.body.likes, editedBlog.likes)
 
     const blogsAtEnd = await helper.blogsInDb()
     assert.strictEqual(blogsAtStart.length, blogsAtEnd.length)
-
+    
     const findBlog = await Blog.findById(blogToEdit.id)
     assert.deepStrictEqual(result.body, findBlog.toJSON())
   })
