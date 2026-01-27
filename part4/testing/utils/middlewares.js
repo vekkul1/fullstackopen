@@ -1,7 +1,10 @@
 const logger = require('./logger')
+let count = 0
+
 
 const requestLogger = (request, response, next) => {
-  logger.info('Method:', request.method, request.status)
+  count += 1
+  logger.info('Method:', request.method, count)
   logger.info('Path:  ', request.path)
   logger.info('Body:  ', request.body)
   logger.info('---')

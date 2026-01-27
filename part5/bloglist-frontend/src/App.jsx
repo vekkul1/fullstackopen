@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Notification from './components/Notification'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
@@ -15,6 +15,8 @@ const App = () => {
   const [url, setUrl] = useState('')
   const [notification, setNotification] = useState(null)
   const [notificationType, setNotificationType] = useState(null)
+
+  const noteFormRef = useRef()
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
