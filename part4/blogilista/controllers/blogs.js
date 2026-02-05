@@ -7,7 +7,8 @@ const userExtractor = require('../utils/middlewares').userExtractor
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog
     .find({})
-    .populate('user', { username: 1, name: 1 , id: 1})
+    .populate('user', {username: 1, name: 1, id: 1})
+  
   response.json(blogs)
 })
 
@@ -55,16 +56,12 @@ blogsRouter.delete('/:id',  async (request, response) => {
 })
 
 blogsRouter.put('/:id', async(request, response) => {
-  const blog = await Blog.findById(request.params.id)
-  if (request.body.likes) {
-    blog.likes = request.body.likes
-  }
-  if (request.body.title) {
-    blog.title = request.body.title
-  }
-  if (request.body.url) {
-    blog.url = request.body.url
-  }
+  const blog = await Blog.findById(request.params.id).populate('user', {username: 1, name: 1, id: 1})
+  blog.likes = request.body.likes
+  blog.title = request.body.title
+  blog.url = request.body.url
+  blog.author = request.body.author
+
   const result = await blog.save()
   response.status(201).json(result)
 })

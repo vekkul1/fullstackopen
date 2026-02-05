@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Note from './components/Note'
-import NoteForm from './components/Note'
+import NoteForm from './components/NoteForm'
 import noteService from './services/notes'
 import LoginForm from './components/Login'
 import loginService from './services/login'
@@ -21,7 +21,6 @@ const App = () => {
   useEffect(() => {
     noteService.getAll().then(r => {
       setNotes(r)
-      console.log('r', r)
     })
   }, [])
 
