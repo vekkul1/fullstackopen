@@ -34,9 +34,15 @@ const Blog = ({ blog, updateBlog, removeBlog, username }) => {
       </div>
       {visible && (
         <div>
-          {blog.url} <br />
-          {blog.likes} <button onClick={handleLike}>like</button> <br />
-          {blog.user.name} <br />
+          <p>
+            {blog.url}
+          </p>
+          <p>
+            {blog.likes} <button onClick={handleLike}>like</button>
+          </p>
+          <p>
+            {blog.user.name} <br />
+          </p>  
           {owned && (
             <button onClick={handleRemove}>remove</button>
           )}
