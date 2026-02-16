@@ -53,14 +53,23 @@ describe("Note app", () => {
       ).toBeVisible();
     });
 
-    describe("and a note exists", () => {
+    describe("and several notes exist", () => {
       beforeEach(async ({ page }) => {
-        await createNote(page, "a note created by playwright");
+        await createNote(page, "first note", true);
+        await createNote(page, "second note", true);
       });
 
-      test("importance can be changed", async ({ page }) => {
-        await page.getByRole("button", { name: "make not important" }).click();
-        await expect(page.getByText("make important")).toBeVisible();
+      test("one note importance can be changed", async ({ page }) => {
+        const otherNoteElement = page
+          .getByRole("listitem")
+          .filter({ hasText: "first note" });
+
+        await otherNoteElement
+          .getByRole("button", { name: "make not important" })
+          .click();
+        await expect(
+          otherNoteElement.getByText("make important"),
+        ).toBeVisible();
       });
     });
   });
