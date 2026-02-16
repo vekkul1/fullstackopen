@@ -11,7 +11,6 @@ const middleware = require("./utils/middlewares");
 const app = express();
 
 logger.info("connecting to", config.MONGODB_URI);
-console.log(config.MONGODB_URI);
 mongoose
   .connect(config.MONGODB_URI)
   .then(() => {
@@ -32,6 +31,7 @@ app.use("/api/login", loginRouter);
 
 if (process.env.NODE_ENV === "test") {
   const testingRouter = require("./controllers/testing");
+  console.log("test");
   app.use("/api/testing", testingRouter);
 }
 

@@ -6,6 +6,7 @@ router.post("/reset", async (request, response) => {
   await Note.deleteMany({});
   await User.deleteMany({});
 
+  console.log("reset");
   response.status(204).end();
 });
 
