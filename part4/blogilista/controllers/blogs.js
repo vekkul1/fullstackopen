@@ -5,10 +5,12 @@ const User = require('../models/user')
 const userExtractor = require('../utils/middlewares').userExtractor
 
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog
-    .find({})
-    .populate('user', {username: 1, name: 1, id: 1})
-  
+  const blogs = await Blog.find({}).populate('user', {
+    username: 1,
+    name: 1,
+    id: 1,
+  })
+
   response.json(blogs)
 })
 
@@ -33,7 +35,7 @@ blogsRouter.post('/', async (request, response) => {
   response.status(201).json(result)
 })
 
-blogsRouter.delete('/:id',  async (request, response) => {
+blogsRouter.delete('/:id', async (request, response) => {
   const toBeDeleted = await Blog.findById(request.params.id)
 
   if (!toBeDeleted) {
@@ -44,19 +46,25 @@ blogsRouter.delete('/:id',  async (request, response) => {
     return response.status(401).json({ error: 'token invalid' }).end()
   }
   const decodedToken = jwt.verify(request.token, process.env.SECRET)
-  
+
   if (!decodedToken) {
     return response.status(401).json({ error: 'token invalid' }).end()
   }
 
+  console.log(toBeDeleted.user.id, decodedToken.id)
   if (toBeDeleted.user.toString() === decodedToken.id) {
     await Blog.deleteOne(toBeDeleted)
     return response.status(204).end()
   }
+  return response.status(401).end()
 })
 
-blogsRouter.put('/:id', async(request, response) => {
-  const blog = await Blog.findById(request.params.id).populate('user', {username: 1, name: 1, id: 1})
+blogsRouter.put('/:id', async (request, response) => {
+  const blog = await Blog.findById(request.params.id).populate('user', {
+    username: 1,
+    name: 1,
+    id: 1,
+  })
   blog.likes = request.body.likes
   blog.title = request.body.title
   blog.url = request.body.url

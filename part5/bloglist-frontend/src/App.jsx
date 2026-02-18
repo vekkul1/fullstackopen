@@ -17,17 +17,15 @@ const App = () => {
   const blogFormRef = useRef()
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )
+    blogService.getAll().then((blogs) => setBlogs(blogs))
   }, [])
 
   useEffect(() => {
     const loggedInUser = window.localStorage.getItem('loggedBlogappUser')
     if (loggedInUser) {
-      const user = JSON.parse(loggedInUser)
-      setUser(user)
-      blogService.setToken(user.token)
+      const u = JSON.parse(loggedInUser)
+      setUser(u)
+      blogService.setToken(u.token)
     }
   }, [])
 
@@ -40,23 +38,24 @@ const App = () => {
     }, 5000)
   }
 
-  const handleLogin = async event => {
+  const handleLogin = async (event) => {
     event.preventDefault()
 
     try {
       const newUser = await loginService.login({
-        username, password
+        username,
+        password,
       })
-      window.localStorage.setItem( 'loggedBlogappUser', JSON.stringify(newUser))
+      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(newUser))
       setUser(newUser)
       showNotification('login successful')
-
+      blogService.setToken(newUser.token)
     } catch {
       showNotification('wrong username or password', 'w')
     }
   }
 
-  const handleLogOut = async event => {
+  const handleLogOut = async (event) => {
     event.preventDefault()
 
     window.localStorage.removeItem('loggedBlogappUser')
@@ -66,7 +65,11 @@ const App = () => {
 
   const handleCreate = async (blogObject) => {
     try {
-      const response = await blogService.create(blogObject.author, blogObject.title, blogObject.url)
+      const response = await blogService.create(
+        blogObject.author,
+        blogObject.title,
+        blogObject.url,
+      )
       setBlogs(blogs.concat(response))
       blogFormRef.current.toggleVisibility()
       showNotification(`created blog '${response.title}' by ${response.author}`)
@@ -78,14 +81,14 @@ const App = () => {
 
   const updateBlog = async (blog) => {
     const response = await blogService.edit(blog)
-    setBlogs(blogs.map(b => b.id !== blog.id ? b : response))
+    setBlogs(blogs.map((b) => (b.id !== blog.id ? b : response)))
   }
 
   const removeBlog = async (blog) => {
     try {
       await blogService.remove(blog)
 
-      setBlogs(blogs.filter(b => b.id !== blog.id))
+      setBlogs(blogs.filter((b) => b.id !== blog.id))
 
       showNotification(`Removed blog ${blog.title} by ${blog.author}`)
     } catch (error) {
@@ -99,11 +102,11 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
-        <Notification msg={notification} type={notificationType}/>
+        <Notification msg={notification} type={notificationType} />
         <form onSubmit={handleLogin}>
           <div>
             <label>
-                username
+              username
               <input
                 type="text"
                 value={username}
@@ -113,7 +116,7 @@ const App = () => {
           </div>
           <div>
             <label>
-                password
+              password
               <input
                 type="password"
                 value={password}
@@ -131,33 +134,39 @@ const App = () => {
     return (
       <div>
         <h2>blogs</h2>
-        <Notification msg={notification} type={notificationType}/>
+        <Notification msg={notification} type={notificationType} />
         <p>
           logged in as {user.name}!
-          <button type="button" onClick={handleLogOut}>logout</button>
+          <button type="button" onClick={handleLogOut}>
+            logout
+          </button>
         </p>
-        <Togglable buttonLabel="create new blog" ref={blogFormRef} >
+        <Togglable buttonLabel="create new blog" ref={blogFormRef}>
           <BlogForm createBlog={handleCreate} />
         </Togglable>
-        {blogs
-          .sort((a, b) => b.likes - a.likes)
-          .map(blog =>
-            <Blog
-              key={blog.id}
-              blog={blog}
-              updateBlog={updateBlog}
-              removeBlog={removeBlog}
-              username={user.username}
-            />
-        )}
+        <ul style={{ listStyleType: 'none' }}>
+          {blogs
+            .sort((a, b) => b.likes - a.likes)
+            .map((blog) => (
+              <Blog
+                key={blog.id}
+                blog={blog}
+                updateBlog={updateBlog}
+                removeBlog={removeBlog}
+                username={user.username}
+              />
+            ))}
+        </ul>
       </div>
-    )}
+    )
+  }
 
-  return(
+  return (
     <div>
       {!user && loginForm()}
       {user && blogDisplay()}
     </div>
-  )}
+  )
+}
 
 export default App

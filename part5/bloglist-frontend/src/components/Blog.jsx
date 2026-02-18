@@ -9,13 +9,13 @@ const Blog = ({ blog, updateBlog, removeBlog, username }) => {
     paddingLeft: 2,
     border: 'solid',
     borderWidth: 1,
-    marginBottom: 5
+    marginBottom: 5,
   }
-  const handleLike = event => {
+  const handleLike = (event) => {
     event.preventDefault()
     updateBlog({
       ...blog,
-      likes: blog.likes + 1
+      likes: blog.likes + 1,
     })
   }
 
@@ -27,28 +27,25 @@ const Blog = ({ blog, updateBlog, removeBlog, username }) => {
   }
 
   return (
-    <div style={blogStyle} key={blog.id}>
+    <li style={blogStyle} key={blog.id}>
       <div>
         {blog.title} {blog.author}
         <button onClick={() => setVisible(!visible)}>open</button>
       </div>
       {visible && (
         <div>
-          <p>
-            {blog.url}
-          </p>
+          <p>{blog.url}</p>
           <p>
             {blog.likes} <button onClick={handleLike}>like</button>
           </p>
           <p>
             {blog.user.name} <br />
-          </p>  
-          {owned && (
-            <button onClick={handleRemove}>remove</button>
-          )}
+          </p>
+          {owned && <button onClick={handleRemove}>remove</button>}
         </div>
       )}
-    </div>
-  )}
+    </li>
+  )
+}
 
 export default Blog
