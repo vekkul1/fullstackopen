@@ -16,4 +16,10 @@ const createBlog = async (page, blog) => {
     .waitFor()
 }
 
-module.exports = { loginWith, createBlog }
+const openBlog = async (page, text) => {
+  const oneBlog = page.getByRole('listitem').filter({ hasText: text })
+  await oneBlog.getByRole('button').click()
+  return oneBlog
+}
+
+module.exports = { loginWith, createBlog, openBlog }
