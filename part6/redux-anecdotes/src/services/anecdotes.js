@@ -24,4 +24,19 @@ const createNew = async (content) => {
   return await response.json()
 }
 
-export default { getAll, createNew }
+const voteFor = async (content) => {
+  const options = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...content, votes: content.votes + 1 }),
+  }
+
+  const response = await fetch(`${baseUrl}/${content.id}`, options)
+
+  if (!response.ok) {
+    throw new Error('Failed to edit anecdote')
+  }
+  return await response.json()
+}
+
+export default { getAll, createNew, voteFor }

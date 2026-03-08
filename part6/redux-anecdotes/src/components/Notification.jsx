@@ -2,7 +2,6 @@ import { useSelector } from 'react-redux'
 
 const Notification = () => {
   const message = useSelector((r) => {
-    console.log(r.notification)
     return r.notification
   })
   const style = {
