@@ -15,20 +15,32 @@ describe('Blog App', () => {
     await page.goto('')
   })
 
-  test('login page is shown', async ({ page }) => {
-    await expect(page.getByText('Log in to application')).toBeVisible()
+  test('front page is shown', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: 'blogs' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'login' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'home' })).toBeVisible()
+  })
+
+  test('login page opens', async ({ page }) => {
+    await page.getByRole('link', { name: 'login' }).click()
+    await expect(
+      page.getByRole('heading', { name: 'Log in to application' }),
+    ).toBeVisible()
+    await expect(page.getByRole('textbox', { name: 'username' })).toBeVisible()
+    await expect(page.getByRole('textbox', { name: 'password' })).toBeVisible()
   })
 
   describe('login', () => {
     test('user cant login with wrong credentials', async ({ page }) => {
       await loginWith(page, 'root', 'salainen')
-      await expect(page.getByText('logged in as rooter')).not.toBeVisible()
+      await expect(page.getByText('create')).not.toBeVisible()
       await expect(page.getByText('Log in to application')).toBeVisible()
     })
 
-    test('user can login with real credentials', async ({ page }) => {
+    test('user can login with real credential s', async ({ page }) => {
       await loginWith(page, 'root', 'sekret')
-      await expect(page.getByText('logged in as rooter')).toBeVisible()
+      await expect(page.getByText('create')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'logout' })).toBeVisible()
     })
 
     describe('after login', () => {
@@ -79,47 +91,72 @@ describe('Blog App', () => {
           //  },
           //})
         })
-        test('a blog can be liked', async ({ page }) => {
-          const oneBlog = await openBlog(page, 'Canonical string reduction')
-          await oneBlog.getByRole('button', { name: 'like' }).click()
-          await expect(page.getByText('1 like')).toBeVisible()
-        })
-
-        test('a blog can be removed', async ({ page }) => {
-          const oneBlog = await openBlog(page, 'Canonical string reduction')
-          page.on('dialog', (dialog) => dialog.accept())
-          await oneBlog.getByRole('button', { name: 'remove' }).click()
-          expect(oneBlog).not.toBeVisible()
-        })
-
-        test('only blogs owner can see delete', async ({ page, request }) => {
-          await request.post('/api/users', {
-            data: {
-              username: 'heikki',
-              name: 'heikki h.',
-              password: 'salainen',
-            },
-          })
-          await page.getByRole('button', { name: 'logout' }).click()
-          await expect(page.getByText('Log in to application')).toBeVisible()
-          await loginWith(page, 'heikki', 'salainen')
-
-          const oneBlog = await openBlog(page, 'Canonical string reduction')
+        test('blog page opens', async ({ page }) => {
+          await page
+            .getByRole('link', { name: 'Canonical string reduction' })
+            .click()
           await expect(
-            oneBlog.getByRole('button', { name: 'remove' }),
-          ).not.toBeVisible()
+            page.getByRole('heading', {
+              name: 'Edsger W. Dijkstra: Canonical',
+            }),
+          ).toBeVisible()
         })
 
-        test('sorted in order of likes', async ({ page }) => {
-          expect(page.getByRole('listitem').last()).toContainText(
-            'Canonical string reduction',
-          )
-          const oneBlog = await openBlog(page, 'Canonical string reduction')
-          await oneBlog.getByRole('button', { name: 'like' }).click()
-          const blogsAtEnd = page.getByRole('listitem')
-          await expect(blogsAtEnd.first()).toContainText(
-            'Canonical string reduction',
-          )
+        describe('blog page can be opened', () => {
+          test('a blog can be liked', async ({ page }) => {
+            await openBlog(page, 'Canonical string reduction')
+            await page.getByRole('button', { name: 'like' }).click()
+            await expect(page.getByText('1like')).toBeVisible()
+          })
+
+          test('a blog can be removed', async ({ page }) => {
+            await openBlog(page, 'Canonical string reduction')
+            page.on('dialog', (dialog) => dialog.accept())
+            await page.getByRole('button', { name: 'remove' }).click()
+            await expect(
+              page.getByRole('button', { name: 'logout' }),
+            ).toBeVisible()
+            await expect(page.getByRole('link', { name: 'home' })).toBeVisible()
+            await expect(
+              page.getByRole('link', { name: 'create' }),
+            ).toBeVisible()
+            await expect(
+              page.getByRole('link', { name: 'Canonical string reduction' }),
+            ).not.toBeVisible()
+          })
+
+          test('only blogs owner can see delete', async ({ page, request }) => {
+            await request.post('/api/users', {
+              data: {
+                username: 'heikki',
+                name: 'heikki h.',
+                password: 'salainen',
+              },
+            })
+            await page.getByRole('button', { name: 'logout' }).click()
+            await expect(
+              page.getByRole('link', { name: 'login' }),
+            ).toBeVisible()
+            await loginWith(page, 'heikki', 'salainen')
+
+            await openBlog(page, 'Canonical string reduction')
+            await expect(
+              page.getByRole('button', { name: 'remove' }),
+            ).not.toBeVisible()
+          })
+
+          test('sorted in order of likes', async ({ page }) => {
+            expect(page.getByRole('listitem').last()).toContainText(
+              'Canonical string reduction',
+            )
+            await openBlog(page, 'Canonical string reduction')
+            await page.getByRole('button', { name: 'like' }).click()
+            await page.getByRole('link', { name: 'home' }).click()
+            const blogsAtEnd = page.getByRole('listitem')
+            await expect(blogsAtEnd.first()).toContainText(
+              'Canonical string reduction',
+            )
+          })
         })
       })
     })
