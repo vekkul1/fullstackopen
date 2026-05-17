@@ -1,3 +1,5 @@
+import { Card, Link, Typography, Button, ButtonGroup } from '@mui/material'
+
 const Blog = ({ blog, updateBlog, removeBlog, username }) => {
   if (!blog) {
     return null
@@ -21,20 +23,41 @@ const Blog = ({ blog, updateBlog, removeBlog, username }) => {
   }
 
   return (
-    <div>
-      <h2>
-        {blog.author}: {blog.title}
-      </h2>
-      <p>{blog.url}</p>
-      <p>
-        {blog.likes}
-        {username && <button onClick={handleLike}>like</button>}
-      </p>
-      <p>
-        {blog.user.name} <br />
-      </p>
-      {owned && <button onClick={handleRemove}>remove</button>}
-    </div>
+    <Card style={{ padding: 20, backgroundColor: '#fbfbfb' }}>
+      <Typography variant="h5" sx={{ marginBottom: 1.25 }}>
+        {blog.title}
+      </Typography>
+      <Typography
+        variant="body1"
+        sx={{ color: 'text.secondary', marginBottom: 1 }}
+      >
+        by {blog.author} <br />
+      </Typography>
+      <Typography variant="body2" sx={{ marginBottom: 0.75 }}>
+        <Link>{blog.url}</Link>
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{ color: 'text.secondary', marginBottom: 1 }}
+      >
+        added by {blog.user.name}
+      </Typography>
+      <Typography variant="body1">
+        {blog.likes} likes
+        <ButtonGroup variant="outlined" color="blue" sx={{ marginLeft: 1 }}>
+          {username && (
+            <Button color="primary" onClick={handleLike}>
+              like
+            </Button>
+          )}
+          {owned && (
+            <Button color="secondary" onClick={handleRemove}>
+              remove
+            </Button>
+          )}
+        </ButtonGroup>
+      </Typography>
+    </Card>
   )
 }
 

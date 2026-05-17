@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Link, useNavigate, useMatch } from 'react-router-dom'
+import { AppBar, Button, Container, Toolbar, Typography } from '@mui/material'
 import Notification from './components/Notification'
 import Login from './components/Login'
 import BlogForm from './components/BlogForm'
@@ -11,7 +12,6 @@ const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
   const [notification, setNotification] = useState(null)
-  const [notificationType, setNotificationType] = useState(null)
 
   const navigate = useNavigate()
 
@@ -33,12 +33,10 @@ const App = () => {
     }
   }, [])
 
-  const showNotification = (message, type = null) => {
-    setNotification(message)
-    setNotificationType(type)
+  const showNotification = (message, type = 'success') => {
+    setNotification({ text: message, type: type })
     setTimeout(() => {
       setNotification(null)
-      setNotificationType(null)
     }, 5000)
   }
 
@@ -62,7 +60,7 @@ const App = () => {
       showNotification(`created blog '${response.title}' by ${response.author}`)
     } catch (error) {
       console.log(error)
-      showNotification('creating blog failed', 'w')
+      showNotification('creating blog failed', 'error')
     }
   }
 
@@ -90,33 +88,37 @@ const App = () => {
   }
 
   const loginLink = () => (
-    <Link style={padding} to="/login">
+    <Button color="inherit" component={Link} to="/login">
       login
-    </Link>
+    </Button>
   )
   const logoutLink = () => (
     <>
-      <Link style={padding} to="/create">
-        create
-      </Link>
-      <button type="button" onClick={handleLogOut}>
-        logout
-      </button>
+      <Button color="inherit" component={Link} to="/create">
+        New Blog
+      </Button>
+      <Button color="inherit" component="button" onClick={handleLogOut}>
+        Logout
+      </Button>
     </>
   )
 
   return (
-    <div>
-      <Notification msg={notification} type={notificationType} />
-      <div>
-        <Link style={padding} to="/">
-          home
-        </Link>
+    <Container>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
+            Blogs App
+          </Typography>
+          <Button color="inherit" component={Link} to="/">
+            Blogs
+          </Button>
+          {!user && loginLink()}
+          {user && logoutLink()}
+        </Toolbar>
+      </AppBar>
 
-        {!user && loginLink()}
-        {user && logoutLink()}
-      </div>
-
+      <Notification notification={notification} />
       <Routes>
         <Route
           path="/"
@@ -145,7 +147,7 @@ const App = () => {
           element={<Blog {...{ blog, updateBlog, removeBlog, username }} />}
         />
       </Routes>
-    </div>
+    </Container>
   )
 }
 

@@ -1,34 +1,18 @@
-const Notification = ({ msg, type }) => {
-  if (!msg) {
+import { Alert } from '@mui/material'
+
+const Notification = ({ notification }) => {
+  if (notification === null) {
     return null
   }
 
-  const stylesheet = type === 'w'
-    ? {
-      color: 'red',
-      background: 'lightgray',
-      fontSize: 20,
-      borderStyle: 'solid',
-      borderRadius: 5,
-      padding: 10,
-      marginBottom: 10,
-    }
-    : {
-      color: 'green',
-      background: 'lightgray',
-      fontSize: 20,
-      borderStyle: 'solid',
-      borderRadius: 5,
-      padding: 10,
-      marginBottom: 10,
-    }
-
   return (
-    <div style={stylesheet}>
-      {msg}
-    </div>
+    <Alert
+      style={{ marginBottom: 10, marginTop: 10 }}
+      severity={notification.type}
+    >
+      {notification.text}
+    </Alert>
   )
 }
-
 
 export default Notification
